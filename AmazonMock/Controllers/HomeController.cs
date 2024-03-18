@@ -1,4 +1,5 @@
 using AmazonMock.Models;
+using AmazonMock.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,27 +7,47 @@ namespace AmazonMock.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        // get info from interface
+        private IBookRepository _repo;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IBookRepository temp)
         {
-            _logger = logger;
+            _repo = temp;
         }
 
-        public IActionResult Index()
+        // set index to take in the current page number
+        public IActionResult Index(int pageNum)
         {
-            return View();
-        }
+            // show 10 books per page
+            int pageSize = 10;
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            // make new list view
+            var bookComponents = new BooksListViewModel
+            {
+                Books = _repo.Books
+                    // order by id
+                    .OrderBy(x => x.BookID)
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                    // skip previously logged entries
+                    .Skip((pageNum - 1) * pageSize)
+
+                    // take defined page size
+                    .Take(pageSize),
+
+                // make new instance of pagination info
+                PaginationInfo = new PaginationInfo
+                {
+                    // set current page to page number
+                    CurrentPage = pageNum,
+
+                    // set items per page to page size
+                    ItemsPerPage = pageSize,
+
+                    // set total items to total number of records
+                    TotalItems = _repo.Books.Count()
+                }
+            };
+            return View(bookComponents);
         }
     }
 }

@@ -2,7 +2,22 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!--call our book class from model folder-->
+@model BooksListViewModel
+
+<h1>Books for sale</h1>
+
+<!--
+    dynamically get each item from db using foreach method
+    get info from partial view, pass model to access info
+-->
+@foreach (Book b in Model.Books)
+{
+    <partial name="BookSummary" model="b" />
+}
+
+
+<!--make links for other pages dyanmically with custom tag helpers-->
+<div page-model="@Model.PaginationInfo" page-action="Index" page-classes-enabled="true"
+     page-class="btn" page-class-normal="btn-outline-dark" page-class-selected="btn-primary"
+     class="btn-group pull-right m-1"></div>

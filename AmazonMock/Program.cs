@@ -1,7 +1,21 @@
+using AmazonMock.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// set up service
+builder.Services.AddDbContext<BookstoreContext>(options =>
+{
+    options.UseSqlite(builder.Configuration["ConnectionStrings:BookConnection"]);
+}
+);
+
+// when client logs on website, client get instance of ef repository
+builder.Services.AddScoped<IBookRepository, EFBookRepository>();
+
 
 var app = builder.Build();
 
@@ -20,8 +34,8 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute("pagination", "Books/{pageNum}", new { Controller = "Home", action = "Index" });
+
+app.MapDefaultControllerRoute();
 
 app.Run();
